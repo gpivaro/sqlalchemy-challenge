@@ -7,15 +7,14 @@
 
 import numpy as np
 import os
-
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy import create_engine, func
 import datetime as dt
-
 from flask import Flask, jsonify
+
 
 #################################################
 # Database Setup
@@ -78,7 +77,8 @@ def precipitation():
     # Create a dictionary from the row data and append to a list of all_stations
     all_precipitation = []
     for meas in results:
-        meas_dict = {str(meas.date): meas.prcp}
+        # meas_dict = {str(meas.date): meas.prcp}
+        meas_dict = {(meas.date): meas.prcp}
         all_precipitation.append(meas_dict)
 
     return jsonify(all_precipitation)
@@ -150,7 +150,7 @@ def tobs():
         .all()
     )
 
-    # Using the station id from the previous query, calculate the temperature recorded,
+    # Using the station id from the previous query the temperature recorded
     most_active_station_id = most_active_stations[0][0]
 
     results = (
@@ -163,9 +163,14 @@ def tobs():
     # close the session to end the communication with the database
     session.close()
 
-    # Convert list of tuples into normal list
-    all_tobs = list(np.ravel(results))
-    print(all_tobs)
+    # Create a dictionary from the row data and append to a list of all_stations
+    all_tobs = []
+    for tob in results:
+        tob_dict = {}
+        tob_dict["Date"] = tob.date
+        tob_dict["Temperature"] = tob.tobs
+        all_tobs.append(tob_dict)
+
     return jsonify(all_tobs)
 
 
@@ -237,13 +242,11 @@ def tobs_from_data(start_date):
         .all()
     )
 
-    # lst = [TMIN, TMAX]
-    # Method 1: List Comprehension
-    # results = [x for l in lst for x in l]
-    results = [{x, y, z} for x in TMIN for y in TMAX for z in TAVG]
-
     # close the session to end the communication with the database
     session.close()
+
+    # Convert list of lists
+    results = [{x, y, z} for x in TMIN for y in TMAX for z in TAVG]
 
     # Convert list of tuples into normal list
     tobs_from_data = list(np.ravel(results))
