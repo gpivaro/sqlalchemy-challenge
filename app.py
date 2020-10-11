@@ -48,14 +48,15 @@ def welcome():
     """List all available api routes."""
     return (
         f"<h3>Available Routes:</h3>"
-        f"<h4>Precipitation:</h4>"
+        f"<h4>Precipitation (all dates available in the database):</h4>"
         f"/api/v1.0/precipitation<br/><br/>"
         f"<h4>Stations:</h4>"
         f"/api/v1.0/stations<br/><br/>"
-        f"<h4>Temperature Observations:</h4>"
+        f"<h4>Temperature Observations (last 12 months of dates available in the database):</h4>"
         f"/api/v1.0/tobs<br/><br/>"
-        f"<h4>Minimum, average, and the max temperature for a given start or start-end range:</h3>"
+        f"<h4>Minimum, average, and the max temperature for a given start:</h3>"
         f"/api/v1.0/start<br/>"
+        f"<h4>Minimum, average, and the max temperature for a given start or start-end range:</h3>"
         f"/api/v1.0/start/end<br/>"
     )
 
@@ -67,9 +68,26 @@ def welcome():
 def precipitation():
     """Return a list of all precipitation measurments"""
 
-    # Query all precipitation measurments
+    # open the session to start the communication with the database
     session = Session(engine)
-    results = session.query(Measurement.date, Measurement.prcp).all()
+
+    # Retrieve the most recent meas data
+    date_last_meas_str = session.query(func.max(Measurement.date))
+
+    # Convert the data from string to datetime
+    date_last_meas_object = dt.datetime.strptime(
+        date_last_meas_str.first()[0], "%Y-%m-%d"
+    ).date()
+
+    # Create a query data interval
+    query_date = date_last_meas_object - dt.timedelta(days=365)
+
+    # Query the database based on the target date (last 365 days)
+    results = (
+        session.query(Measurement.date, Measurement.prcp)
+        .filter(Measurement.date > query_date)
+        .all()
+    )
 
     # close the session to end the communication with the database
     session.close()
@@ -90,8 +108,10 @@ def precipitation():
 def stations():
     """Return a list of all stations"""
 
-    # Query all precipitation measurments
+    # open the session to start the communication with the database
     session = Session(engine)
+
+    # Query all precipitation measurments
     results = session.query(
         Station.id,
         Station.station,
@@ -126,7 +146,7 @@ def stations():
 def tobs():
     """Return a list of all tobs"""
 
-    # Query all precipitation measurments
+    # open the session to start the communication with the database
     session = Session(engine)
 
     # Retrieve the most recent meas data
@@ -179,79 +199,113 @@ def tobs():
 # and the max temperature for a given start or start-end range.
 # When given the start only, calculate TMIN, TAVG, and TMAX for all dates
 # greater than and equal to the start date.
-# When given the start and the end date, calculate the TMIN, TAVG, and TMAX
-# for dates between the start and end date inclusive.
 @app.route("/api/v1.0/<start_date>")
-def tobs_from_data(start_date):
+def tobs_from_date(start_date):
     """Return a JSON list of the minimum temperature, the average temperature, 
     and the max temperature for a given start data on."""
 
-    # Query all precipitation measurments
+    # open the session to start the communication with the database
     session = Session(engine)
 
-    # Retrieve the most recent meas data
-    date_last_meas_str = session.query(func.max(Measurement.date))
+    # This function called `calc_temps_mod` will accept start date and end date in the format '%Y-%m-%d'
+    # and return the minimum, average, and maximum temperatures for that range of dates
+    # When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater
+    # than and equal to the start date.
+    def calc_temps_mod(start_date, end_date=0):
+        """TMIN, TAVG, and TMAX for a list of dates.
+        
+        Args:
+            start_date (string): A date string in the format %Y-%m-%d
+            end_date (string): A date string in the format %Y-%m-%d
+            
+        Returns:
+            TMIN, TAVE, and TMAX
+        """
+        if end_date == 0:
+            return (
+                session.query(
+                    func.min(Measurement.tobs),
+                    func.avg(Measurement.tobs),
+                    func.max(Measurement.tobs),
+                )
+                .filter(Measurement.date >= start_date)
+                .all()
+            )
+        else:
+            return (
+                session.query(
+                    func.min(Measurement.tobs),
+                    func.avg(Measurement.tobs),
+                    func.max(Measurement.tobs),
+                )
+                .filter(Measurement.date >= start_date)
+                .filter(Measurement.date <= end_date)
+                .all()
+            )
 
-    # Convert the data from string to datetime
-    date_last_meas_object = dt.datetime.strptime(
-        date_last_meas_str.first()[0], "%Y-%m-%d"
-    ).date()
-
-    date_start = dt.datetime.strptime(start_date, "%Y-%m-%d").date()
-
-    # Create a query data interval
-    # query_date = date_last_meas_object - dt.timedelta(days=365)
-    query_date = date_last_meas_object - date_start
-
-    # What are the most active stations? (i.e. what stations have the most rows)?
-    # List the stations and the counts in descending order.
-    most_active_stations = (
-        session.query(Station.station, func.count(Station.station))
-        .filter(Measurement.station == Station.station)
-        .group_by(Station.station)
-        .order_by(func.count(Station.station).desc())
-        .all()
-    )
-
-    # Using the station id from the previous query, calculate the temperature recorded,
-    most_active_station_id = most_active_stations[0][0]
-
-    # lowest temperature recorded
-    TMIN = (
-        session.query(Measurement.tobs)
-        .filter(Measurement.date > query_date)
-        .filter(Measurement.station == most_active_station_id)
-        .order_by(Measurement.tobs.asc())
-        .all()
-    )
-
-    # highest temperature recorded
-    TMAX = (
-        session.query(Measurement.tobs)
-        .filter(Measurement.date > query_date)
-        .filter(Measurement.station == most_active_station_id)
-        .order_by(Measurement.tobs.desc())
-        .all()
-    )
-
-    # average temperature
-    TAVG = (
-        session.query(func.avg(Measurement.tobs))
-        .filter(Measurement.date > query_date)
-        .filter(Measurement.station == most_active_station_id)
-        .all()
-    )
+    temperatures = calc_temps_mod(start_date)
 
     # close the session to end the communication with the database
     session.close()
 
-    # Convert list of lists
-    results = [{x, y, z} for x in TMIN for y in TMAX for z in TAVG]
+    return jsonify(temperatures)
 
-    # Convert list of tuples into normal list
-    tobs_from_data = list(np.ravel(results))
-    print(tobs_from_data)
-    return jsonify(tobs_from_data)
+
+# /api/v1.0/<start> and /api/v1.0/<start>/<end>
+# Return a JSON list of the minimum temperature, the average temperature,
+# and the max temperature for a given start or start-end range.
+# When given the start and the end date, calculate the TMIN, TAVG, and TMAX
+# for dates between the start and end date inclusive.
+@app.route("/api/v1.0/<start_date>/<end_date>")
+def tobs_from_date_to_date(start_date, end_date):
+    """Return a JSON list of the minimum temperature, the average temperature, 
+    and the max temperature for a given start data on."""
+
+    # open the session to start the communication with the database
+    session = Session(engine)
+
+    # This function called `calc_temps_mod` will accept start date and end date in the format '%Y-%m-%d'
+    # and return the minimum, average, and maximum temperatures for that range of dates
+    # When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater
+    # than and equal to the start date.
+    def calc_temps_mod(start_date, end_date=0):
+        """TMIN, TAVG, and TMAX for a list of dates.
+        
+        Args:
+            start_date (string): A date string in the format %Y-%m-%d
+            end_date (string): A date string in the format %Y-%m-%d
+            
+        Returns:
+            TMIN, TAVE, and TMAX
+        """
+        if end_date == 0:
+            return (
+                session.query(
+                    func.min(Measurement.tobs),
+                    func.avg(Measurement.tobs),
+                    func.max(Measurement.tobs),
+                )
+                .filter(Measurement.date >= start_date)
+                .all()
+            )
+        else:
+            return (
+                session.query(
+                    func.min(Measurement.tobs),
+                    func.avg(Measurement.tobs),
+                    func.max(Measurement.tobs),
+                )
+                .filter(Measurement.date >= start_date)
+                .filter(Measurement.date <= end_date)
+                .all()
+            )
+
+    temperatures = calc_temps_mod(start_date, end_date)
+
+    # close the session to end the communication with the database
+    session.close()
+
+    return jsonify(temperatures)
 
 
 if __name__ == "__main__":
