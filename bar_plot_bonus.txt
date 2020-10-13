@@ -1,0 +1,27 @@
+# importing matplotlib 
+import matplotlib.pyplot as plt 
+
+
+# making a simple plot 
+x =[1] 
+y =[72.02] 
+
+# creating error 
+y_errormin =[8.02] 
+y_errormax =[5.98] 
+
+x_error = 0
+y_error =[y_errormin, y_errormax] 
+
+# ploting graph 
+plt.bar(x, y, color='orange', alpha=.5, width=0.5) 
+plt.errorbar(x, y, 
+			yerr = y_error, 
+			xerr = x_error, 
+			fmt ='k')
+plt.xticks(x, (''))
+plt.ylim([0, 100])
+plt.xlim([0, 2])
+plt.ylabel("Temp (F)")
+plt.title("Trip Avg Temp")
+plt.grid('--',alpha=.1)
