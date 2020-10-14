@@ -12,9 +12,8 @@ You've decided to treat yourself to a long holiday vacation in Honolulu, Hawaii!
 
 Use Python and SQLAlchemy to do basic climate analysis and data exploration of the provided climate database. All of the following analysis will be completed using SQLAlchemy ORM queries, Pandas, and Matplotlib.
 
-* The analysis is presented in the [notebook](climate_starter.ipynb). The provided database files to complete the climate analysis and data exploration is [hawaii.sqlite](Resources/hawaii.sqlite).
+* The analysis is presented in the [notebook](climate.ipynb). The provided database files to complete the climate analysis and data exploration is [hawaii.sqlite](Resources/hawaii.sqlite).
 
-* Choose a start date and end date for the trip (make sure that the vacation range is approximately 3-15 days total).
 
 * We use SQLAlchemy `create_engine` to connect to the SQLite database. We use SQLAlchemy `automap_base()` to reflect the tables into classes and save a reference to those classes called `Station` and `Measurement`.
 
@@ -98,6 +97,8 @@ Design a Flask API based on the queries that you have just developed.
 
 
 ### Temperature Analysis I
+
+* Choose a start date and end date for the trip (make sure that the vacation range is approximately 3-15 days total).
 
 * The notebook contains a function called `calc_temps` that will accept a start date and end date in the format `%Y-%m-%d`. The function will return the minimum, average, and maximum temperatures for that range of dates.
 
