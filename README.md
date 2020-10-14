@@ -19,36 +19,17 @@ We use Python and SQLAlchemy to do basic climate analysis and data exploration o
 
 ### Precipitation Analysis
 
-* Design a query to retrieve the last 12 months of precipitation data.
+* Design a query to retrieve the last 12 months of precipitation data and select only the `date` and `prcp` values. Load the query results into a Pandas DataFrame and set the index to the date column. Sort the DataFrame values by `date` and plot the results. Use Pandas to print the summary statistics for the precipitation data.
 
-* Select only the `date` and `prcp` values.
-
-* Load the query results into a Pandas DataFrame and set the index to the date column.
-
-* Sort the DataFrame values by `date`.
-
-* Plot the results using the DataFrame `plot` method.
 
   ![precipitation](Images/precipitation.png)
 
-* Use Pandas to print the summary statistics for the precipitation data.
 
 ### Station Analysis
 
-* Design a query to calculate the total number of stations.
+* Design a query to calculate the total number of stations and find the most active stations. List the stations and observation counts in descending order and find which station has the highest number of observations? 
 
-* Design a query to find the most active stations.
-
-  * List the stations and observation counts in descending order.
-
-  * Which station has the highest number of observations?
-
-  
-* Design a query to retrieve the last 12 months of temperature observation data (TOBS).
-
-  * Filter by the station with the highest number of observations.
-
-  * Plot the results as a histogram with `bins=12`.
+* Design a query to retrieve the last 12 months of temperature observation data (TOBS). Filter by the station with the highest number of observations and plot the results as a histogram.
 
     ![station-histogram](Images/station-histogram.png)
 
@@ -104,22 +85,14 @@ Design a Flask API based on the queries that you have just developed.
 
 * Using the `calc_temps` function, calculate the min, avg, and max temperatures for the vacation trip using the matching dates from the previous year (i.e., use "2017-01-01" if your trip start date was "2018-01-01").
 
-* Plot the min, avg, and max temperature from your previous query as a bar chart.
-
-  * Use the average temperature as the bar height.
-
-  * Use the peak-to-peak (TMAX-TMIN) value as the y error bar (YERR).
+* Plot the min, avg, and max temperature from your previous query as a bar chart. Use the average temperature as the bar height. and the peak-to-peak (TMAX-TMIN) value as the y error bar (YERR).
 
     ![temperature](Images/Trip_Avg_Temp.png)
 
 ### Temperature Analysis II
 
-* Calculate the daily normals. Normals are the averages for the min, avg, and max temperatures.
+* Calculate the daily normals. Normals are the averages for the min, avg, and max temperatures. The function called `daily_normals` calculates the daily normals for a specific date. This date string will be in the format `%m-%d`.
 
-* The function called `daily_normals` calculates the daily normals for a specific date. This date string will be in the format `%m-%d`.
-
-* Create a list of dates for the trip in the format `%m-%d`. Use the `daily_normals` function to calculate the normals for each date string and append the results to a list.
-
-* Use Pandas to plot an area plot for the daily normals.
+* Create a list of dates for the trip in the format `%m-%d`. Use the `daily_normals` function to calculate the normals for each date string and append the results to a list. Use Pandas to plot an area plot for the daily normals.
 
   ![daily-normals](Images/daily_normals.png)
