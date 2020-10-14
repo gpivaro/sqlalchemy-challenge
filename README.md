@@ -6,16 +6,16 @@ This repository contains the following scenario:
 
 ## Surfs Up!
 
-You've decided to treat yourself to a long holiday vacation in Honolulu, Hawaii! To help with your trip planning, you need to do some climate analysis in the area.
+In this repo, we present a climate analysis of Honolulu, Hawaii.
 
 ## Step 1 - Climate Analysis and Exploration
 
-Use Python and SQLAlchemy to do basic climate analysis and data exploration of the provided climate database. All of the following analysis will be completed using SQLAlchemy ORM queries, Pandas, and Matplotlib.
+We use Python and SQLAlchemy to do basic climate analysis and data exploration of the provided climate database. All of the following analysis will be completed using SQLAlchemy ORM queries, Pandas, and Matplotlib.
 
 * The analysis is presented in the [notebook](climate.ipynb). The provided database files to complete the climate analysis and data exploration is [hawaii.sqlite](Resources/hawaii.sqlite).
 
 
-* We use SQLAlchemy `create_engine` to connect to the SQLite database. We use SQLAlchemy `automap_base()` to reflect the tables into classes and save a reference to those classes called `Station` and `Measurement`.
+* To connect to the SQLite database we use SQLAlchemy `create_engine`. We use SQLAlchemy `automap_base()` to reflect the tables into classes and save a reference to those classes called `Station` and `Measurement`.
 
 ### Precipitation Analysis
 
@@ -93,7 +93,7 @@ Design a Flask API based on the queries that you have just developed.
 
 - - -
 
-## Bonus: Other Recommended Analyses
+## Additional Analyses
 
 
 ### Temperature Analysis I
